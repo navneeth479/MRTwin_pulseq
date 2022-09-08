@@ -46,12 +46,12 @@ Nread = 64    # frequency encoding steps/samples
 Nphase = 64    # phase encoding steps/samples
 
 # Define rf events
-rf1, _,_ = make_sinc_pulse(flip_angle=15 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
+rf1, _,_ = make_sinc_pulse(flip_angle=30 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
 # rf1, _= make_block_pulse(flip_angle=90 * math.pi / 180, duration=1e-3, system=system)
 
 # Define other gradients and ADC events
-gx = make_trapezoid(channel='x', flat_area=Nread, flat_time=5e-3, system=system)
-adc = make_adc(num_samples=Nread, duration=5e-3, phase_offset=0*np.pi/180,delay=gx.rise_time, system=system)
+gx = make_trapezoid(channel='x', flat_area=Nread, flat_time=1e-3, system=system)
+adc = make_adc(num_samples=Nread, duration=1e-3, phase_offset=0*np.pi/180,delay=gx.rise_time, system=system)
 gx_pre = make_trapezoid(channel='x', area=-gx.area / 2, duration=1e-3, system=system)
 
 rf_phase = 180
@@ -61,10 +61,10 @@ rf_inc = 180
 # CONSTRUCT SEQUENCE
 # ======
 sdel=1e-0
-
-rf0, _,_ = make_sinc_pulse(flip_angle=15/2 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
+# half flip angle prep pulse
+rf0, _,_ = make_sinc_pulse(flip_angle=30/2 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
 seq.add_block(rf0)
-seq.add_block(make_delay(3e-3))
+seq.add_block(make_delay(0.5e-3)) # half TR of rf1
 
 for ii in range(-Nphase//2, Nphase//2):  # e.g. -64:63
 

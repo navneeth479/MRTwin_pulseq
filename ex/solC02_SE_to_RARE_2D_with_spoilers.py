@@ -1,5 +1,6 @@
 experiment_id = 'exB02_SE_to_RARE_2D'
 
+'Same but just with spoiler gradients'
 # %% S0. SETUP env
 import sys,os
 os.chdir(os.path.abspath(os.path.dirname(__file__)))  #  makes the ex folder your working directory

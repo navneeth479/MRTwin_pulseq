@@ -61,20 +61,23 @@ gx_pre = make_trapezoid(channel='x', area=+gx.area / 2, duration=5e-3, system=sy
 for ii in range(-Nphase//2, Nphase//2):  # e.g. -64:63
     gp= make_trapezoid(channel='y', area=-ii, duration=5e-3, system=system)
     
-    seq.add_block(make_delay(5))
+
     
     rf_prep, _= make_block_pulse(flip_angle=180 * math.pi / 180, duration=1e-3, system=system)
-    #FLAIR
-    seq.add_block(rf_prep)
-    seq.add_block(make_delay(2.5))
-    seq.add_block(gx_pre)
-   
+    #### FLAIR seq. block (remove for T2w image)####
+    #seq.add_block(rf_prep)
+    #seq.add_block(make_delay(2.5))
+    #seq.add_block(gx_pre)
+    #### Fending block ####
     
     seq.add_block(rf1)
-    seq.add_block(gx_pre,gp,make_delay(0.01))
+    seq.add_block(gx_pre,gp,make_delay(0.008))  # 0.5*TE
     seq.add_block(rf2)
-    seq.add_block(make_delay(0.005))
+    seq.add_block(make_delay(0.0085))  # 0.5*TE
     seq.add_block(adc,gx)
+    
+    # Modify to change TR
+    seq.add_block(make_delay(1))
 
 # %% S3. CHECK, PLOT and WRITE the sequence  as .seq
 ok, error_report = seq.check_timing()  # Check whether the timing of the sequence is correct

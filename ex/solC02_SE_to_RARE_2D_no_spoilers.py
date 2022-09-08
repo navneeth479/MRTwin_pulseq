@@ -1,4 +1,6 @@
 experiment_id = 'exB02_SE_to_RARE_2D'
+'Cooments - Timing is extremely important for RARE/TSE sequence. Pay attention to TE/2'
+
 
 # %% S0. SETUP env
 import sys,os
@@ -58,6 +60,8 @@ gx = make_trapezoid(channel='x', flat_area=Nread, flat_time=2e-3, system=system)
 adc = make_adc(num_samples=Nread, duration=2e-3, phase_offset=90*np.pi/180,delay=gx.rise_time, system=system)
 gx_pre0 = make_trapezoid(channel='x', area=+(1.0 +0.0 )*gx.area / 2, duration=1e-3, system=system)
 gx_prewinder = make_trapezoid(channel='x', area= +0.0 *gx.area / 2, duration=1e-3, system=system)
+
+
 
 # ======
 # CONSTRUCT SEQUENCE
