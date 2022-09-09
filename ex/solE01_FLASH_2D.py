@@ -53,8 +53,8 @@ sz = (32, 32)  # spin system size / resolution
 Nread = 64  # frequency encoding steps/samples
 Nphase = 64  # phase encoding steps/samples
 
-# Define rf events
-rf1, _, _ = make_sinc_pulse(
+# Define rf events (gz,gzr - slice selection, ss rewinder)
+rf1, gz, gzr = make_sinc_pulse(
     flip_angle=5 * np.pi/180,
     duration=1e-3,
     slice_thickness=slice_thickness,
@@ -86,8 +86,9 @@ for ii in range(-Nphase//2, Nphase//2):  # e.g. -64:63
     rf_inc = divmod(rf_inc + rf_spoiling_inc, 360.0)[1]  # increase increment
     rf_phase = divmod(rf_phase + rf_inc, 360.0)[1]  # increment phase
 
-    seq.add_block(rf1)
-    gy_pre = make_trapezoid(channel='y', area=ii/fov, duration=5e-3, system=system)
+    seq.add_block(rf1,gz)
+    seq.add_block(gzr)
+    gy_pre = make_trapezoid(channel='y', area=ii/fov , duration=5e-3, system=system)
     seq.add_block(gx_pre, gy_pre)
     seq.add_block(adc, gx)
     gy_spoil = make_trapezoid(channel='y', area=-ii/fov, duration=5e-3, system=system)
@@ -140,7 +141,7 @@ obj_p.plot_sim_data()
 # %% S5:. SIMULATE  the external.seq file and add acquired signal to ADC plot
 from new_core import util
 
-use_simulation = 0
+use_simulation = 1
 
 if use_simulation:
     signal, _= sim_external(obj=obj_p,plot_seq_k=[0,1])
