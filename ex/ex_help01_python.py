@@ -322,7 +322,7 @@ print(array,'shape=',array.shape)
 
 #%% exercise
 array = np.zeros([5,5,2])
-array[0,::3,0]=np.ones(2) # aim: fill every second column with vlue given by linspace
+array[0,::1,0]=np.ones(2) # aim: fill every second column with vlue given by linspace
 
 #%% exercise, fix this code
 A=np.linspace(0,1,5)

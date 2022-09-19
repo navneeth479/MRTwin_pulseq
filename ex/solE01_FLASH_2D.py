@@ -1,4 +1,5 @@
-experiment_id = 'exE01_FLASH_2D'
+experiment_id = 'exE01_FLASH_2D_lbrock_fruit3'
+# Scanner experiment
 
 # %% S0. SETUP env
 import sys,os
@@ -50,10 +51,10 @@ seq = Sequence()
 fov = 220e-3
 slice_thickness = 8e-3
 sz = (32, 32)  # spin system size / resolution
-Nread = 64  # frequency encoding steps/samples
-Nphase = 64  # phase encoding steps/samples
+Nread = 128  # frequency encoding steps/samples
+Nphase = 128  # phase encoding steps/samples
 
-# Define rf events (gz,gzr - slice selection, ss rewinder)
+# Define rf events
 rf1, gz, gzr = make_sinc_pulse(
     flip_angle=5 * np.pi/180,
     duration=1e-3,
@@ -63,9 +64,13 @@ rf1, gz, gzr = make_sinc_pulse(
     system=system
 )
 
+    # seq.add_block(rf1,gz)
+    # seq.add_block(gzr)
+
+zoom=0.5
 # Define other gradients and ADC events
-gx = make_trapezoid(channel='x', flat_area=Nread/fov, flat_time=10e-3, system=system)
-adc = make_adc(num_samples=Nread, duration=10e-3, delay=gx.rise_time, system=system)
+gx = make_trapezoid(channel='x', flat_area=Nread/fov*zoom, flat_time=2e-3, system=system)
+adc = make_adc(num_samples=Nread, duration=2e-3, delay=gx.rise_time, system=system)
 gx_pre = make_trapezoid(channel='x', area=-0.5*gx.area, duration=5e-3, system=system)
 gx_spoil = make_trapezoid(channel='x', area=1.5*gx.area, duration=5e-3, system=system)
 
@@ -88,10 +93,10 @@ for ii in range(-Nphase//2, Nphase//2):  # e.g. -64:63
 
     seq.add_block(rf1,gz)
     seq.add_block(gzr)
-    gy_pre = make_trapezoid(channel='y', area=ii/fov , duration=5e-3, system=system)
+    gy_pre = make_trapezoid(channel='y', area=ii/fov*zoom, duration=5e-3, system=system)
     seq.add_block(gx_pre, gy_pre)
     seq.add_block(adc, gx)
-    gy_spoil = make_trapezoid(channel='y', area=-ii/fov, duration=5e-3, system=system)
+    gy_spoil = make_trapezoid(channel='y', area=-ii/fov*zoom, duration=5e-3, system=system)
     seq.add_block(gx_spoil, gy_spoil)
     if ii < Nphase-1:
         seq.add_block(make_delay(0.001))
@@ -141,7 +146,7 @@ obj_p.plot_sim_data()
 # %% S5:. SIMULATE  the external.seq file and add acquired signal to ADC plot
 from new_core import util
 
-use_simulation = 1
+use_simulation = 0
 
 if use_simulation:
     signal, _= sim_external(obj=obj_p,plot_seq_k=[0,1])
@@ -157,8 +162,8 @@ sp_adc.plot(t_adc,np.abs(signal.numpy()))
 # %% S6: MR IMAGE RECON of signal ::: #####################################
 fig=plt.figure(); # fig.clf()
 plt.subplot(411); plt.title('ADC signal')
-spectrum=torch.reshape((signal),(Nphase,Nread)).clone().t()
-kspace=spectrum
+spectrum=torch.reshape((signal),(Nphase,Nread,20)).clone().transpose(1,0)
+kspace=spectrum[:,:,10]
 plt.plot(torch.real(signal),label='real')
 plt.plot(torch.imag(signal),label='imag')
 
@@ -171,10 +176,11 @@ space = torch.zeros_like(spectrum)
 # fftshift
 spectrum=torch.fft.fftshift(spectrum,0); spectrum=torch.fft.fftshift(spectrum,1)
 #FFT
-space = torch.fft.ifft2(spectrum)
+space = torch.fft.ifft2(spectrum,dim=(0,1))
 # fftshift
 space=torch.fft.ifftshift(space,0); space=torch.fft.ifftshift(space,1)
 
+space=torch.sum(space.abs(),2)
 
 plt.subplot(345); plt.title('k-space')
 plt.imshow(np.abs(kspace.numpy()))
@@ -194,4 +200,3 @@ plt.subplot(348); plt.title('phantom PD')
 plt.imshow(PD)
 plt.subplot(3,4,12); plt.title('phantom B0')
 plt.imshow(B0)
-

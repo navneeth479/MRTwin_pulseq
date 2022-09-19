@@ -149,7 +149,7 @@ obj_p.plot_sim_data()
 
 
 # %% S5:. SIMULATE  the external.seq file and add acquired signal to ADC plot
-signal, _= sim_external(obj=obj_p,plot_seq_k=[0,1])
+signal, _= sim_external(obj=obj_p,plot_seq_k=[0,0])
 # plot the result into the ADC subplot
 sp_adc.plot(t_adc,np.real(signal.numpy()),t_adc,np.imag(signal.numpy()))
 sp_adc.plot(t_adc,np.abs(signal.numpy()))

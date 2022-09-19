@@ -1,4 +1,4 @@
-experiment_id = 'exB09_GRE_EPI_2D'
+experiment_id = 'exB09_GRE_EPI_2D_approach2'
 
 # %% S0. SETUP env
 import sys,os
@@ -42,33 +42,62 @@ seq = Sequence()
 fov = 1000e-3 
 slice_thickness=8e-3
 
-Nread = 32    # frequency encoding steps/samples
-Nphase = 32    # phase encoding steps/samples
+Nread = 64   # frequency encoding steps/samples
+Nphase = 64    # phase encoding steps/samples
+n_slices = 1
 
-# Define rf events
-rf1, _,_ = make_sinc_pulse(flip_angle=90 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
+# ======
+# CREATE EVENTS
+# ======
+# Create 90 degree slice selection pulse and gradient
+rf, gz, gzr = make_sinc_pulse(flip_angle=90 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
 
 # Define other gradients and ADC events
-gx = make_trapezoid(channel='x', flat_area=Nread, flat_time=0.2e-3, system=system)
+delta_k = 1 / fov
+k_width = Nread * delta_k
+dwell_time = 4e-6
+readout_time = Nread * dwell_time
+flat_time = np.ceil(readout_time * 1e5) * 1e-5  # round-up to the gradient raster
+gx = make_trapezoid(
+    channel="x",
+    system=system,
+    amplitude=k_width / readout_time,
+    flat_time=flat_time
+)
+adc = make_adc(
+    num_samples=Nread,
+    duration=readout_time,
+    delay=gx.rise_time + flat_time / 2 - (readout_time - dwell_time) / 2
+)
 
-gx_ = make_trapezoid(channel='x', flat_area=-Nread, flat_time=0.2e-3, system=system)
-adc = make_adc(num_samples=Nread, duration=0.2e-3, phase_offset=0*np.pi/180,delay=gx.rise_time, system=system)
-gx_pre = make_trapezoid(channel='x', area=-gx.area / 2, duration=1e-3, system=system)
 
-gy_pre = make_trapezoid(channel='y', area=-Nphase//2, duration=1e-3, system=system)
+# Pre-phasing gradients
+pre_time = 8e-4
+gx_pre = make_trapezoid(
+    channel="x", system=system, area=-gx.area / 2, duration=pre_time
+)
 
-gp= make_trapezoid(channel='y', area=1, duration=1e-3, system=system)
+gy_pre = make_trapezoid(
+    channel="y", system=system, area=-Nphase / 2 * delta_k, duration=pre_time
+)
+
+# Phase blip in the shortest possible time
+dur = np.ceil(2 * np.sqrt(delta_k / system.max_slew) / 10e-6) * 10e-6
+gy = make_trapezoid(channel='y', area=delta_k, duration=1e-3, system=system)
+
 # ======
 # CONSTRUCT SEQUENCE
 # ======
-seq.add_block(rf1)  # add rf1 with 90° flip_angle 
-seq.add_block(gx_pre,gy_pre)
-for ii in range(0, Nphase//2):  # e.g. -64:63
-
-    seq.add_block(adc,gx)
-    seq.add_block(gp)
-    seq.add_block(adc,gx_)
-    seq.add_block(gp)
+# Define sequence blocks
+for s in range(n_slices):
+    rf.freq_offset = gz.amplitude * slice_thickness * (s - (n_slices - 1) / 2)
+    seq.add_block(rf, gz)
+    seq.add_block(gzr)
+    seq.add_block(gx_pre, gy_pre)
+    for i in range(Nphase):
+        seq.add_block(gx, adc)  # Read one line of k-space
+        seq.add_block(gy)  # Phase blip
+        gx.amplitude = -gx.amplitude  # Reverse polarity of read gradient
 
 
 # %% S3. CHECK, PLOT and WRITE the sequence  as .seq
@@ -119,7 +148,7 @@ obj_p.plot_sim_data()
 
 
 # %% S5:. SIMULATE  the external.seq file and add acquired signal to ADC plot
-signal, _= sim_external(obj=obj_p,plot_seq_k=[0,1])
+signal, _= sim_external(obj=obj_p,plot_seq_k=[0,1],M_threshold=-1e-3)
 # plot the result into the ADC subplot
 sp_adc.plot(t_adc,np.real(signal.numpy()),t_adc,np.imag(signal.numpy()))
 sp_adc.plot(t_adc,np.abs(signal.numpy()))
@@ -142,8 +171,8 @@ ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 
 space = np.zeros_like(kspace)
 
-kspace[:,::2]=kspace[::-1, ::2]
-kspace[1:,::2]=kspace[:-1,::2]
+#kspace[:,::2]=kspace[::-1, ::2]
+#kspace[1:,::2]=kspace[:-1,::2]
 
 # fftshift
 kspace=np.fft.fftshift(kspace)

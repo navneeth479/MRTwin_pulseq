@@ -141,7 +141,7 @@ kspace=spectrum
 plt.plot(torch.real(signal),label='real')
 plt.plot(torch.imag(signal),label='imag')
 
-
+# add noise to signal
 major_ticks = np.arange(0, Nphase*Nread, Nread) # this adds ticks at the correct position szread
 ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 

@@ -158,7 +158,7 @@ ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 
 space = torch.zeros_like(spectrum)
 
-if 0: # FFT
+if 1: # FFT
     # fftshift
     spectrum=torch.fft.fftshift(spectrum,0); spectrum=torch.fft.fftshift(spectrum,1)
     #FFT
