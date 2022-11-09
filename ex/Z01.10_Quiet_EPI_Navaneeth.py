@@ -43,8 +43,8 @@ seq = Sequence()
 fov = 1000e-3 
 slice_thickness=8e-3
 
-Nread = 64    # frequency encoding steps/samples
-Nphase = 64    # phase encoding steps/samples
+Nread = 32    # frequency encoding steps/samples
+Nphase = 32    # phase encoding steps/samples
 delta_k = 1 / fov
 n_slices = 1
 
@@ -55,7 +55,7 @@ gibbs_rings = False
 
 # QuEPI sequence types selection
 method_list = ['blipped','constant','ZAP']  
-method = method_list[1]
+method = method_list[0]
 
 
 

@@ -43,8 +43,8 @@ fov = 1000e-3
 slice_thickness=8e-3
 delta_k = 1 / fov
 
-Nread = 64    # frequency encoding steps/samples
-Nphase = 64   # phase encoding steps/samples
+Nread = 32    # frequency encoding steps/samples
+Nphase = 32   # phase encoding steps/samples
 
 # Define rf events
 rf1, _,_ = make_sinc_pulse(flip_angle=90 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)
@@ -60,7 +60,7 @@ gy_pre = make_trapezoid(channel='y', area=-Nphase//2, duration=1e-3, system=syst
 
 # Phase blip in the shortest possible time
 dur = np.ceil(2 * np.sqrt(delta_k / system.max_slew) / 10e-6) * 10e-6
-gp = make_trapezoid(channel='y', area=delta_k, duration=1e-3, system=system)
+gp = make_trapezoid(channel='y', area=2, duration=2e-3, system=system)
 # ======
 # CONSTRUCT SEQUENCE
 # ======

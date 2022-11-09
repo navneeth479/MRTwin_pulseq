@@ -40,9 +40,9 @@ seq = Sequence()
 # Define FOV and resolution
 fov = 1000e-3 
 slice_thickness=8e-3
-sz=(64,64)   # spin system size / resolution
-Nread = 64    # frequency encoding steps/samples
-Nphase = 64    # phase encoding steps/samples
+sz=(18,18)   # spin system size / resolution
+Nread = 18    # frequency encoding steps/samples
+Nphase = 18    # phase encoding steps/samples
 
 # Define rf events
 rf1, _,_ = make_sinc_pulse(flip_angle=6 * math.pi / 180, duration=1e-3,slice_thickness=slice_thickness, apodization=0.5, time_bw_product=4, system=system)

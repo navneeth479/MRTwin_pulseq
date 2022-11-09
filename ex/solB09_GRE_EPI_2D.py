@@ -42,8 +42,8 @@ seq = Sequence()
 fov = 1000e-3 
 slice_thickness=8e-3
 
-Nread = 64   # frequency encoding steps/samples
-Nphase = 64    # phase encoding steps/samples
+Nread = 32   # frequency encoding steps/samples
+Nphase = 32    # phase encoding steps/samples
 n_slices = 1
 
 # ======

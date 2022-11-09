@@ -44,11 +44,11 @@ seq = Sequence()
 # Define FOV and resolution
 fov = 1000e-3
 slice_thickness=8e-3
-sz=(64,64)   # spin system size / resolution
-Nread = 64   # frequency encoding steps/samples
-Nphase = 64    # phase encoding steps/samples
+sz=(18,18)   # spin system size / resolution
+Nread = 18  # frequency encoding steps/samples
+Nphase = 18    # phase encoding steps/samples
 
-method = 'traj'
+method = 'equations'
 
 if method == 'traj': 
     # # Define trajectory
@@ -108,7 +108,7 @@ if method == 'traj':
     plt.show()
     # =================
     
-    safety_margin = 0.74
+    safety_margin = 0.84
     dt_gcomp = np.abs([ga.real, ga.imag]) / (system.max_grad * safety_margin) * system.grad_raster_time
     dt_gabs = np.abs(ga) / (system.max_grad * safety_margin) * system.grad_raster_time
     dt_scomp =  np.sqrt(np.abs([sa.real, sa.imag]) / (system.max_slew * safety_margin)) * system.grad_raster_time
